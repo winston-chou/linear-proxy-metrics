@@ -2,7 +2,7 @@
 import numpy as np
 
 
-SIMS = 100
+SIMS = 10_000
 BETA = np.array([-0.4, 0.04])
 
 LAMBDA = (
