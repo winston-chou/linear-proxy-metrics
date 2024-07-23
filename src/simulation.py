@@ -2,7 +2,12 @@
 import numpy as np
 import pandas as pd
 
-from .estimators import get_beta_hat_from_vcov, get_beta_hat_from_tls
+from .estimators import (
+    ColumnMap,
+    get_beta_hat_from_vcov,
+    get_beta_hat_from_tls,
+    get_beta_hat_from_vcov_minus_noise,
+)
 
 
 def simulate_metric_means(sample_size, rng, unit_covariance, means=None):
@@ -57,14 +62,25 @@ def simulate_many_treatment_effects(
             ]
         ),
         columns=["y", "x1", "x2"],
-    ).assign(sample_size=sample_size)
+    ).assign(sample_size=sample_size, test_id=lambda df: [i for i, _ in df.iterrows()])
 
 
 def get_estimates_for_sample_size(sample_size, data, unit_covariance, surrogacy_params):
     subset = data[data.sample_size == sample_size][["y", "x1", "x2"]].values
     liml = get_beta_hat_from_tls(subset, unit_covariance)
-    tc = get_beta_hat_from_vcov(
-        np.cov(subset, rowvar=False) - 2 * unit_covariance / sample_size
+    # tc = get_beta_hat_from_vcov(
+    #     np.cov(subset, rowvar=False) - 2 * unit_covariance / sample_size
+    # )
+    tc = get_beta_hat_from_vcov_minus_noise(
+        data[data.sample_size == sample_size],
+        unit_covariance,
+        column_map=ColumnMap(
+            test_id="test_id",
+            outcome="y",
+            mediators=["x1", "x2"],
+            sample_size_treatment="sample_size",
+            sample_size_control="sample_size",
+        ),
     )
     naive = get_beta_hat_from_vcov(np.cov(subset, rowvar=False))
     return pd.DataFrame(
