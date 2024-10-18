@@ -32,10 +32,6 @@ def get_beta_hat_from_tls(matrix, noise_vcov):
     return -gamma[1:] / gamma[0]
 
 
-def get_beta_hat_from_vcov_minus_noise():
-    """Given a set of"""
-
-
 #### Code to implement our total covariance estimator
 @dataclass
 class ColumnMap:
